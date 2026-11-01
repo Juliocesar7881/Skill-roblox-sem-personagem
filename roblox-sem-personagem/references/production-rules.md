@@ -8,11 +8,11 @@ They apply to every Short. They come from the feedback on hundreds of Roblox Sho
 - Movement uses the official Roblox packages: Cartoony for locomotion, Levitation for floating and the R15 emotes (`wave`, `point`, `laugh`, `cheer`, `dance`, `sit`). Do not invent locomotion poses.
 - **The mouth moves with the real voice** (`K.falar` with the MP3 envelope). A line never plays with a still mouth.
 - No shaking during the countdown: reactions come from expression, gaze and animation.
-- Every animation change must be clean. Check the frames before, during and after each change.
+- Every animation change must be clean. Check the frames before, during and after each change: lost animations count as defects.
 
 ## Camera rule no. 1: the face is the star
 - The head fills at least 10% of the frame height (close-up 22–26%, medium 14%, wide 10%), with the eyes in the upper third.
-- The camera stays within 45° of where the character looks and never shows their back without a story reason. Compute the camera from the real head direction.
+- The camera stays within 45° of where the character looks and never shows their back without a story reason. Compute the camera from the real head direction (`LookVector`), never from a fixed offset in the world.
 - Every important event ends in a reaction close-up of at least 1 s.
 - Objects, effects and captions never cover their eyes and mouth for more than 0.3 s. The karaoke caption sits at ~0.665–0.72 of the height, so their whole face stays above it.
 - A following camera aims **below** the head (`cam.seguir(noob.Head, offset, t, V(0, -1.5, 0))`).
@@ -45,7 +45,7 @@ They apply to every Short. They come from the feedback on hundreds of Roblox Sho
 ## Lines, voice and continuity
 - Only the language of the channel, with the voice of the sheet (My Voices), model Eleven v4 and an emotion tag at the start of each line, after the sheet's `voz.sotaque` when it has one.
 - The intention line comes before the action; the reaction starts on the event.
-- No stutter or wrong words: fix the source audio. A correct caption does not fix a wrong line.
+- No stutter, wrong words or foreign accent: fix the source audio. A correct caption does not fix a wrong line.
 - Measure the lines first, then fit the action timing.
 
 ## Captions
@@ -63,7 +63,7 @@ They apply to every Short. They come from the feedback on hundreds of Roblox Sho
 
 ## Image
 - 1080×1920, bitrate ≥ 12 Mbps (CRF ≤ 18), no Studio/Roblox interface, no cursor, no borders.
-- A living, textured set (clouds, trees, flowers, props), with Future lighting, Atmosphere, Bloom and ColorCorrection.
+- A living, textured set (clouds, trees, flowers, props), with Future lighting, Atmosphere, Bloom, ColorCorrection and SunRays.
 - Indoors, avoid lots of white, strong PointLights, Neon and semi-transparent beams between the camera and the protagonist: they wash out the image. Use mid-tone colors and weak lights.
 
 ## Camera tricks that pass the face audit

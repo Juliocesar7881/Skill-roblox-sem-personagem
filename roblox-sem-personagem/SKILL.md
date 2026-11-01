@@ -25,7 +25,7 @@ Com `Setup completo.`, o `status` mostra o canal, o idioma, o público e o prota
 - **Assinatura:** `personagem.assinatura`, a expressão que marca o personagem no fim dos vídeos.
 - **Personalidade:** `personagem.personalidade` guia as falas e as reações.
 
-Leia [references/production-rules.md](references/production-rules.md), [references/format.md](references/format.md) e [references/animkit.md](references/animkit.md) antes de produzir, e [references/youtube-studio.md](references/youtube-studio.md) antes de postar. Depois das falas prontas, rode `scripts/fazer_short.py PROJETO`: ele faz auditoria, gravação, edição, revisão de legendas e render, e só termina com o MP4 final. `--so-conferir` só confere a entrega.
+Leia [references/production-rules.md](references/production-rules.md), [references/format.md](references/format.md), [references/animkit.md](references/animkit.md) e [references/licoes-cenas.md](references/licoes-cenas.md) antes de produzir, [references/ideias.md](references/ideias.md) antes de escrever as ideias, [references/metadados.md](references/metadados.md) antes do título e da descrição, e [references/youtube-studio.md](references/youtube-studio.md) antes de postar. Dois Shorts completos de exemplo estão em `modelos/exemplos/`, só para consultar a técnica. Depois das falas prontas, rode `scripts/fazer_short.py PROJETO`: ele faz auditoria, gravação, edição, revisão de legendas e render, e só termina com o MP4 final. `--so-conferir` só confere a entrega.
 
 A skill depende da pasta irmã `roblox-video-editor` (renderizador, biblioteca de efeitos e músicas, stickers), que o `install.py` deste repositório instala junto.
 
@@ -84,8 +84,8 @@ A tarefa de linha de comando do Roblox Studio roda um script no place em modo ed
 
 - Canal: o da configuração. Um lote pode indicar outro canal do usuário em `lote.json` (`"canal"`), só quando ele pedir. Horários e quantidade por dia vêm de `horarios` (`lote.py agenda`).
 - Público: `feito_para_criancas` da configuração, salvo se `lote.json` ou `roteiro.json` disserem outra coisa. Categoria Jogos com o título de jogo Roblox.
-- `lote.py metadados` escreve título, descrição e tags com SEO e os créditos. As thumbnails ficam com o dono do canal.
-- Envio e agendamento no YouTube Studio em [references/youtube-studio.md](references/youtube-studio.md).
+- `lote.py metadados` escreve título, descrição e tags com SEO e os créditos ([references/metadados.md](references/metadados.md)). As thumbnails ficam com o dono do canal.
+- Envio e agendamento no YouTube Studio em [references/youtube-studio.md](references/youtube-studio.md). Alternativa, só se o usuário pedir: `scripts/youtube_api.py`, pela API do YouTube, com as credenciais do Google Cloud dele.
 - TikTok (opcional, se a configuração tiver `tiktok.handle`): cada vídeo vai também para esse perfil, na mesma data e hora, com o mesmo título, descrição e tags (`lote.py tiktok`, `lote.py pacote`). O TikTok só agenda 30 dias à frente. Passos em [references/tiktok-studio.md](references/tiktok-studio.md).
 - Pedir para fazer os vídeos não autoriza postar. Só agende ou publique quando o usuário pedir, e só o que ele pedir, no canal dele. Nunca poste em outro canal, nunca digite senhas, e nunca aceite termos ou permissões de uma conta sem o ok do usuário no chat.
 

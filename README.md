@@ -54,7 +54,7 @@ No Claude Code, digite `/roblox-sem-personagem`. Da primeira vez ela faz as perg
 
 ## O que tem aqui
 
-- `roblox-sem-personagem/`: a skill. `SKILL.md` é o fluxo, `references/` tem as regras, `luau/AnimKit.lua` é o kit de animação e `scripts/` tem a produção.
+- `roblox-sem-personagem/`: a skill. `SKILL.md` é o fluxo, `references/` tem as regras de produção, as lições de cena e edição, o guia de ideias e o de SEO, `luau/AnimKit.lua` é o kit de animação, `scripts/` tem a produção e `modelos/exemplos/` tem dois Shorts completos para consulta.
 - `roblox-video-editor/`: o renderizador, com 127 efeitos, 94 músicas, stickers e fontes.
 
 Sua configuração fica em `config.local.json`, seu histórico em `historico/roteiros.md`, e rodar `install.py` de novo não apaga nenhum dos dois.

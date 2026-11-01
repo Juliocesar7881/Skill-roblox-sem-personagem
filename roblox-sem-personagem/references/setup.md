@@ -27,7 +27,7 @@ Pergunte:
 2. Como ele é e como age: criança, adulto, robô, bicho, herói. Peça uma frase de personalidade.
 3. Visual: pele, cabelo, olhos, roupa, acessórios. Aceite descrição livre ou imagem de referência e traduza para a ficha.
 4. A expressão de assinatura, que fecha os vídeos.
-5. A voz. Mostre as vozes grátis em **Voices → My Voices** do ElevenLabs e deixe o usuário ouvir e escolher. Em português do Brasil, coloque `"sotaque": "[Brazilian Portuguese accent]"`.
+5. A voz. Mostre as vozes grátis em **Voices → My Voices** do ElevenLabs e deixe o usuário ouvir e escolher. Duas já usadas em canais reais: **Roger** (masculina, ID `CwhRBWXzGAHq8TQ4Fs17`) e **Jessica** (feminina, ID `cgSgspJ2msm6clMCkdW9`). Confira o ID, não só o nome: existe outra voz chamada Roger, e as cópias da aba Explorar podem pedir plano pago. Em português do Brasil, coloque `"sotaque": "[Brazilian Portuguese accent]"`.
 
 Escreva a ficha num arquivo JSON:
 

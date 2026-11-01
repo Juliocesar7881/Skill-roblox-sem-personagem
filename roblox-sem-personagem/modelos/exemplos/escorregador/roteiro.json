@@ -1,0 +1,123 @@
+{
+ "titulo": "QUAL ESCORREGADOR É O MAIS RÁPIDO?",
+ "idiomas": [
+  "pt"
+ ],
+ "arquivo": "qual-escorregador-e-o-mais-rapido.mp4",
+ "vozes": {
+  "protagonista": "Roger"
+ },
+ "destaques": [
+  "MAIS RÁPIDO",
+  "VERMELHO",
+  "AZUL",
+  "AMARELO",
+  "GIGANTE",
+  "RÁPIDO",
+  "TRAVEI",
+  "AAAAAH"
+ ],
+ "falas": [
+  {
+   "id": "01",
+   "personagem": "protagonista",
+   "texto": "Qual escorregador é o mais rápido?"
+  },
+  {
+   "id": "02",
+   "personagem": "protagonista",
+   "texto": "O vermelho, o azul... ou o amarelo gigante?"
+  },
+  {
+   "id": "03",
+   "personagem": "protagonista",
+   "texto": "Escolhe rápido!"
+  },
+  {
+   "id": "04",
+   "personagem": "protagonista",
+   "texto": "Vou no vermelho! É o mais curtinho!"
+  },
+  {
+   "id": "05",
+   "personagem": "protagonista",
+   "texto": "Ué... travei?"
+  },
+  {
+   "id": "06",
+   "personagem": "protagonista",
+   "texto": "Tá bom, vou no amarelo então."
+  },
+  {
+   "id": "07",
+   "personagem": "protagonista",
+   "texto": "Agora vai!"
+  },
+  {
+   "id": "08",
+   "personagem": "protagonista",
+   "texto": "Aaaaaah!"
+  },
+  {
+   "id": "09",
+   "personagem": "protagonista",
+   "texto": "Pelo menos foi rápido..."
+  }
+ ],
+ "planos": [
+  {
+   "fala": "01",
+   "camera": "close baixo no protagonista, escorregadores ao fundo",
+   "rosto": "surpreso",
+   "acao": "olha para cima"
+  },
+  {
+   "fala": "02",
+   "camera": "um corte por escorregador: vermelho curto e reto, azul em espiral, amarelo altissimo (travelling subindo)",
+   "rosto": "duvida",
+   "acao": "pupilas seguem cada um"
+  },
+  {
+   "fala": "03",
+   "camera": "plano aberto com os tres, placas 1-2-3",
+   "rosto": "medo",
+   "acao": "treme e suor; contagem 5-4-3-2-1 na edicao"
+  },
+  {
+   "fala": "04",
+   "camera": "medio lateral acompanhando a corrida",
+   "rosto": "confiante",
+   "acao": "corre ate o vermelho e sobe"
+  },
+  {
+   "fala": "05",
+   "camera": "close no protagonista parado no meio da rampa vermelha",
+   "rosto": "duvida",
+   "acao": "desliza devagar e para no meio; pisca"
+  },
+  {
+   "fala": "06",
+   "camera": "baixo, olhando a escada gigante do amarelo",
+   "rosto": "medo",
+   "acao": "sobe a escada (corte com elipse)"
+  },
+  {
+   "fala": "07",
+   "camera": "topo do amarelo, cidade la embaixo",
+   "rosto": "confiante",
+   "acao": "senta e empurra"
+  },
+  {
+   "fala": "08",
+   "camera": "segue a descida em alta velocidade; no fim ele voa em arco com cambalhotas",
+   "rosto": "medo",
+   "acao": "voa longe"
+  },
+  {
+   "fala": "09",
+   "camera": "close dele de cara no chao / caido",
+   "rosto": "tonto",
+   "acao": "estrelas de tontura na edicao; corte seco"
+  }
+ ]
+}

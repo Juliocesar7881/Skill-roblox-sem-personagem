@@ -43,6 +43,8 @@
 | `K.falar(noob, envelope, fps)` | Lip sync from the real voice volume (`scripts/envelope_boca.py`): closed mouth + 3 open ovals with tongue, each held ≥ 60 ms; brows lift on emphasis. |
 | `K.bracos(noob, pose, t)` | Arm poses (`segurarFrente` hold in front, `segurarAcima` hold above, `arremesso` throw, `esticarCima` reach up, or your own table). |
 | `K.pose(noob, name)` | Fixed pose on top of the animation (`sentadoReto` sit straight, `bracosPraCima` arms up, or your own table); `nil` clears it. |
+| `K.sentarEm(noob, point, front)` | Sit at a seat point with the sit pose already in place (use before `K.deslizar`). |
+| `K.sixSeven(noob, side, t)` | Hand gesture with the arms. |
 | `K.mover(noob, Vector3, t, anim)` | Walk/run to the target with feet on the floor. |
 | `K.deslizar(noob, K.caminho(model), t, anim, onEnd)` | Slide down sitting, tilted with the ramp, clock-driven (ends exactly at `t`). |
 | `K.voar(noob, target, height, t, turns, anim, onLand)` | Arc with side rolls (the face keeps facing the front camera); with a `CFrame` target (`K.deitado`) it ends in the landing pose. On landing switch to `idle` and cut with `K.cortarPara`. |

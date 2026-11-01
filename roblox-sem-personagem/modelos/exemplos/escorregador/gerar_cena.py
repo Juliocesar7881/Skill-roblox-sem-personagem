@@ -1,0 +1,193 @@
+"""Gera studio/cena.lua (LocalScript) e tempos.json a partir dos tempos das falas.
+
+  python gerar_cena.py            usa falas/falas.json (ElevenLabs)
+  python gerar_cena.py --estimado tempos estimados pelo texto (ensaio sem voz)
+"""
+import argparse, json, re, sys
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+
+
+def estimar(roteiro):
+    falas = []
+    for f in roteiro['falas']:
+        ws, t = [], 0.0
+        for w in f['texto'].split():
+            d = 0.12 + 0.055 * len(w)
+            ws.append({'w': w, 'start': round(t, 3), 'end': round(t + d, 3)})
+            t += d + (0.25 if re.search(r'[.!?,]$', w) else 0.04)
+        falas.append({'id': f['id'], 'texto': f['texto'], 'duracao': round(ws[-1]['end'], 3), 'palavras': ws, 'arquivo': None})
+    return falas
+
+
+def palavra(fala, alvo):
+    for w in fala['palavras']:
+        if alvo in w['w'].lower():
+            return w['start']
+    raise KeyError(alvo)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--estimado', action='store_true')
+    ap.add_argument('--sem-auditoria', action='store_true', help='gravacao final: sem o custo da auditoria')
+    ap.add_argument('--idioma', default='pt', help='pt ou es: falas-<idioma>/, studio/cena-<idioma>.lua, tempos-<idioma>.json')
+    a = ap.parse_args()
+    roteiro = json.loads((HERE / 'roteiro.json').read_text(encoding='utf-8'))
+    suf = '' if a.idioma == 'pt' else f'-{a.idioma}'
+    falas = estimar(roteiro) if a.estimado else json.loads((HERE / f'falas{suf}' / 'falas.json').read_text(encoding='utf-8'))
+    F = {f['id']: f for f in falas}
+    ini = {}
+    t = 0.3
+    ini['01'] = t; t += F['01']['duracao'] + 0.2
+    ini['02'] = t; t += F['02']['duracao'] + 0.15
+    ini['03'] = t; t += F['03']['duracao'] + 0.1
+    contagem = t; t += 5.0
+    ini['04'] = t + 0.1; t = ini['04'] + F['04']['duracao']
+    corrida = ini['04'] + 0.5
+    topo_vermelho = t + 0.05
+    trava = topo_vermelho + 2.0
+    ini['05'] = trava + 0.2; t = ini['05'] + F['05']['duracao']
+    ini['06'] = t + 0.3; t = ini['06'] + F['06']['duracao']
+    topo_amarelo = t + 0.05
+    ini['07'] = topo_amarelo + 1.0; t = ini['07'] + F['07']['duracao']
+    descida = t + 0.05
+    ini['08'] = descida + 0.45
+    voo = descida + 2.2
+    pouso = voo + 1.6
+    ini['09'] = max(pouso + 0.75, ini['08'] + F['08']['duracao'] + 0.2); t = ini['09'] + F['09']['duracao']
+    fim = round(t + 0.6, 3)
+    cor = {'pt': ('vermelho', 'azul', 'amarelo'), 'es': ('rojo', 'azul', 'amarillo')}[a.idioma]
+    cv = ini['02'] + palavra(F['02'], cor[0]) - 0.05
+    ca = ini['02'] + palavra(F['02'], cor[1]) - 0.05
+    cm = ini['02'] + palavra(F['02'], cor[2]) - 0.05
+
+    ev = []
+    E = lambda t, corpo: ev.append(f'\t{{t = {t:.3f}, f = function()\n{corpo}\n\tend}},')
+    # Gancho: close baixo, surpreso, olhando para cima.
+    E(0, '''		raiz.CFrame = inicio
+		K.anim(noob, "idle")
+		K.rosto(noob, "surpreso", 0)
+		K.olhar(noob, 0, -0.8, 0)
+		cam.rosto(noob, 4.8, 36, {altura = -0.6, queixo = 0.1})''')
+    E(0.6, '		cam.rosto(noob, 4.1, 34, {altura = -0.5, queixo = 0.1, t = 1.6})')
+    # Fala 02: um corte por escorregador, no instante da palavra.
+    E(ini['02'] - 0.05, '		K.rosto(noob, "surpreso")')
+    E(cv, '		K.inserto(true)\n		cam.corte(V(-14, 4.5, -11), V(-22, 6.5, 9), 58)\n		cam.mover(V(-15, 4.2, -9), V(-22, 6.5, 9), 1.1, 54)')
+    E(ca, '		cam.corte(V(3, 6, -9), V(-6, 10, 22), 64)\n		cam.mover(V(3, 8, -7), V(-6, 12, 22), 1.2, 62)')
+    E(cm, '		cam.corte(V(30, 3, -24), V(24, 10, 20), 58)\n		cam.mover(V(30, 5, -26), V(24, 50, 64), 1.6, 60)')
+    # Fala 03 e contagem: noob grande na frente, os tres escorregadores atras.
+    E(ini['03'] - 0.05, '''		K.inserto(false)
+		K.rosto(noob, "medo")
+		K.olhar(noob, 0, 0, 0.1)
+		cam.corte(V(0, 4.0, -16.4), V(0, 6.6, 10), 60)
+		cam.mover(V(0, 4.1, -15.4), V(0, 6.6, 10), 2.4, 58)''')
+    # Sem tremedeira na contagem (pedido): a tensao vem do rosto e do olhar indo de um lado ao outro.
+    for k in range(10):
+        dx = -1 if k % 2 == 0 else 1
+        E(contagem + k * 0.5 + 0.05, f'		K.olhar(noob, {dx}, -0.25, 0.1)')
+    E(contagem + 2.5, '''		K.rosto(noob, "medo")
+		cam.rosto(noob, 4.2, 36, {altura = -0.3})
+		cam.rosto(noob, 3.4, 33, {altura = -0.3, t = 2.4})''')
+    # Fala 04: escolhe o vermelho e sai correndo.
+    E(ini['04'] - 0.05, '''		K.rosto(noob, "confiante")
+		K.olhar(noob, -0.6, 0)
+		K.anim(noob, "apontar", {loop = false})
+		cam.rosto(noob, 4.4, 38, {lado = 1.2, altura = -0.4})''')
+    E(corrida, '''		K.mover(noob, V(-18.5, 0, -9.5), 1.1, "correr")
+		cam.seguir(raiz, V(-7, 2.2, -5.5), 1.3)''')
+    # No topo do vermelho: desce devagar ate travar.
+    E(topo_vermelho, f'''		K.sentarEm(noob, e1[1], V(0, 0, -1))
+		K.rosto(noob, "feliz")
+		K.deslizar(noob, meio1, {trava:.3f} - K.tempo())
+		cam.seguir(noob.Head, V(4, 0.6, -7.5), 2.3, V(0, -1.0, 0))''')
+    E(trava, '''		K.anim(noob, "sentar")
+		K.rosto(noob, "surpreso")
+		cam.rosto(noob, 5.4, 38, {lado = 0.9, altura = 0.15, queixo = 0.05})''')
+    E(ini['05'] + 0.1, '		K.olhar(noob, 0.2, 0.9)')
+    # Fala 06: o amarelo gigante.
+    # Corte com teletransporte: K.cortarPara troca a animacao um quadro antes (sem o quadro do noob
+    # ainda sentado no lugar novo).
+    E(ini['06'] - 0.07, '''		K.cortarPara(noob, K.emPe(V(22.5, 0, -18), V(24.5, 0, -26)), "idle", function()
+			cam.corte(V(21, 2.4, -25), V(24.5, 9, 6), 46)
+			cam.mover(V(21.2, 2.2, -24.2), V(24.5, 12, 6), 1.6, 44)
+		end)
+		K.rosto(noob, "medo")
+		K.olhar(noob, 0.3, -1)''')
+    E(topo_amarelo, '''		K.sentarEm(noob, e3[1], V(0, 0, -1))
+		K.rosto(noob, "medo")
+		K.olhar(noob, 0, 1)
+		K.inserto(true)
+		-- Camera baixa no pe do escorregador olhando para o noob la no topo: mostra o tamanho.
+		cam.corte(V(31, 2.2, -17), e3[1] + V(0, 2, 0), 52)
+		cam.mover(V(30, 2.8, -13.5), e3[1] + V(0, 2, 0), 0.85, 46)''')
+    E(ini['07'] - 0.15, '''		K.inserto(false)
+		K.rosto(noob, "confiante")
+		K.olhar(noob, 0, 0)
+		cam.rosto(noob, 4.6, 40, {lado = 1.3, altura = 0.1, queixo = 0.1})''')
+    # Descida rapida, grito e voo com cambalhotas.
+    # O voo comeca exatamente quando a descida termina (callback), sem duas animacoes brigando.
+    E(descida, f'''		local pouso = K.deitado(V(24, 0, -60), V(0, 0, 1))
+		K.deslizar(noob, e3, {voo:.3f} - K.tempo(), nil, function()
+			K.voar(noob, pouso, 11, {pouso:.3f} - K.tempo(), 1, "cair", function()
+				-- Sem animacao o R15 deitado abre os bracos em T (cara de bug); idle sem transicao deixa
+				-- o corpo esticado com os bracos ao lado. O corte para a vista de cima espera a pose
+				-- entrar (K.cortarPara). Olhos de nocaute (X) como na referencia.
+				K.rosto(noob, "nocaute", 0.05)
+				K.cortarPara(noob, pouso, "idle", function()
+					local c = noob.Head.Position
+					cam.corte(c + V(0, 7.0, -1.8), c + V(0, 0, -1.6), 50, V(0, 0, 1))
+				end)
+				K.poeira(V(24, K.chao(V(24, 0, -60)) + 0.3, -60), 30)
+				cam.tremor(0.8, 0.5)
+			end)
+			cam.seguir(noob.Head, V(4.6, 1.0, -6.2), 1.6, V(0, -1.1, 0))
+		end)
+		cam.seguir(noob.Head, V(3.2, 1.2, -9), 2.6, V(0, -1.7, 0))''')
+    E(ini['08'] - 0.1, '		K.rosto(noob, "grito")\n		K.olhar(noob, 0, 0)')
+    E(pouso + 0.6, '''		K.rosto(noob, "nocaute")
+		local c = noob.Head.Position
+		cam.corte(c + V(0, 5.2, -0.2), c, 40, V(0, 0, 1))
+		cam.mover(c + V(0, 4.3, -0.2), c, 2.2, 38, nil, V(0, 0, 1))''')
+    E(ini['09'] + 0.2, '		K.olhar(noob, -0.4, 0.3)')
+
+    # Boca guiada pela voz real: um envelope por fala, comecando junto com o audio.
+    if not a.estimado:
+        sys.path.insert(0, str(Path.home() / '.claude' / 'skills' / 'roblox-sem-personagem' / 'scripts'))
+        from envelope_boca import envelope
+        for f in falas:
+            env = envelope(HERE / f'falas{suf}' / f['arquivo'])
+            E(ini[f['id']], f'		K.falar(noob, "{env}", 30)')
+
+    lua = f'''-- Gerado por gerar_cena.py ({'estimado' if a.estimado else 'tempos do ElevenLabs'}). Duracao {fim:.2f}s.
+local RS = game:GetService("ReplicatedStorage")
+local K = require(RS:WaitForChild("AnimKit"))
+local noob = workspace:WaitForChild("Protagonista")
+local raiz = noob:WaitForChild("HumanoidRootPart")
+local cam = K.camera
+local V = Vector3.new
+local e1 = K.caminho(workspace:WaitForChild("Escorregador1"))
+local e3 = K.caminho(workspace:WaitForChild("Escorregador3"))
+local inicio = raiz.CFrame
+local meio1 = {{}}
+for i = 1, 5 do meio1[i] = e1[i] end
+K.piscar(noob)
+K.preCarregar(noob)
+K.foco(noob.Head)
+K.anim(noob, "idle", {{fade = 0}})
+''' + ('' if a.sem_auditoria else 'K.AUDITORIA_DETALHE = true\nK.auditar(noob)\nK.auditarCamera(noob)\n') + '''
+K.rodar({''' + '''
+''' + '\n'.join(ev) + f'''
+}}, {fim})
+'''
+    (HERE / 'studio' / f'cena{suf}.lua').write_text(lua, encoding='utf-8')
+    tempos = {'falas': ini, 'contagem': contagem, 'trava': trava, 'pouso': pouso, 'voo': voo,
+              'descida': descida, 'topo_vermelho': topo_vermelho, 'topo_amarelo': topo_amarelo,
+              'corrida': corrida, 'cortes_opcoes': [cv, ca, cm], 'fim': fim, 'estimado': a.estimado}
+    (HERE / f'tempos{suf}.json').write_text(json.dumps(tempos, indent=1), encoding='utf-8')
+    print(json.dumps({k: (round(v, 2) if isinstance(v, float) else v) for k, v in tempos.items() if k != 'falas'}))
+
+
+if __name__ == '__main__':
+    main()
