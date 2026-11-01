@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+config.local.json
+personagem_extra.lua
+historico-musicas.json
+.installed-by-*
+entregas/
+*.mp4
+*.mkv
+*.wav

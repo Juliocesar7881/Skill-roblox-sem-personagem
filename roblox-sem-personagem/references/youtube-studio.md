@@ -1,0 +1,107 @@
+# Posting on YouTube
+
+Videos go to the channel of the setup (`canal` in `python scripts/configurar.py status`). A batch can name another
+channel of the user in its `lote.json` (`"canal": {"nome", "handle", "id"}`), only when the user asks for it. Before
+every upload, check the channel id in the Studio URL. The user signs in to YouTube Studio in their own Chrome (Claude in
+Chrome); never type passwords, never change account or channel settings.
+
+## Settings for every video
+
+| Field | Value |
+|---|---|
+| Schedule | The times of the setup, in its time zone. `lote.py agenda` fills the slots. |
+| Audience | Setup default (`feito_para_criancas`): `VIDEO_MADE_FOR_KIDS_MFK` or `VIDEO_MADE_FOR_KIDS_NOT_MFK`. A batch can override it in `lote.json` / `roteiro.json`; `lote.py metadados/agenda` carry the choice to `publicacao.json` and `agenda.json`. |
+| Paid promotion | No (`VIDEO_PAID_PRODUCT_PLACEMENT_NO`) |
+| Altered content | No (`VIDEO_HAS_ALTERED_CONTENT_NO`) |
+| Video language | The language of the channel. |
+| Category | Gaming, with the game title **Roblox** (pick the `Roblox` / `Roblox 2006` suggestion). |
+| Title / description / tags | from `publicacao.json` (`lote.py metadados`): SEO for Roblox searches, `#shorts #roblox` in the title, tags ≤ 500 characters. |
+| Thumbnail | the user makes it; leave the default. |
+
+## How the upload is automated
+
+The snippets below accept the Portuguese labels (Criar, Enviar vídeos, Mostrar mais, Próxima, Programar, Entendi,
+Horário local) and the English ones. For a whole batch, `scripts/studio_upload_helpers.js` has the same steps as
+functions, including the language of the channel.
+
+1. `python scripts/servidor_envio.py LOTE` serves `GET /meta/NN` (title, description, tags, file name) and
+   `GET /video/NN` (the final MP4) on 127.0.0.1:8768 only.
+2. In the Studio tab (channel content page), run with `javascript_tool`:
+
+```js
+const espera = ms => new Promise(r => setTimeout(r, ms)); const N = '01';
+const clicar = el => (el.querySelector('button') || el).click();
+for (const b of [...document.querySelectorAll('ytcp-button, button')].filter(b => /^(close|fechar)$/i.test((b.innerText || '').trim()) && b.offsetParent)) { clicar(b); await espera(500); }
+// the Create button lost its id in Oct 2026: find it by its label
+clicar(document.querySelector('ytcp-button#create-icon') || [...document.querySelectorAll('ytcp-button')].find(e => /^(criar|create)$/i.test((e.innerText || '').trim()) && e.offsetParent)); await espera(1200);
+[...document.querySelectorAll('tp-yt-paper-item')].find(i => /upload videos|enviar v.deos/i.test(i.innerText) && i.offsetParent).click(); await espera(2500);
+const m = await (await fetch('http://127.0.0.1:8768/meta/' + N)).json();
+const blob = await (await fetch('http://127.0.0.1:8768/video/' + N)).blob();
+const input = document.querySelector('ytcp-uploads-file-picker input[type=file][name=Filedata]');
+const dt = new DataTransfer(); dt.items.add(new File([blob], m.arquivo, {type: 'video/mp4'}));
+input.files = dt.files; input.dispatchEvent(new Event('change', {bubbles: true}));
+let t0 = Date.now(); while (!document.querySelector('ytcp-uploads-dialog #title-textarea #textbox') && Date.now() - t0 < 30000) await espera(500);
+await espera(6000);
+const d = document.querySelector('ytcp-uploads-dialog');
+const preencher = (sel, texto) => { const c = d.querySelector(sel); c.focus(); document.execCommand('selectAll', false, null); document.execCommand('insertText', false, texto); c.dispatchEvent(new Event('input', {bubbles: true})); return c.innerText; };
+preencher('#title-textarea #textbox', m.titulo); await espera(500);
+preencher('#description-textarea #textbox', m.descricao); await espera(500);
+const mais = d.querySelector('#toggle-button'); if (mais) { clicar(mais); await espera(1500); }
+for (const nome of [m.feito_para_criancas === false ? 'VIDEO_MADE_FOR_KIDS_NOT_MFK' : 'VIDEO_MADE_FOR_KIDS_MFK', 'VIDEO_PAID_PRODUCT_PLACEMENT_NO', 'VIDEO_HAS_ALTERED_CONTENT_NO']) { const r = d.querySelector('[name=' + nome + ']'); if (r) { r.click(); await espera(400); } }
+```
+
+3. Language: a dropdown helper (`ytcp-form-select` whose text matches the label), then pick the language of the
+   channel (`m.idioma_rotulo`, a regular expression that matches its option):
+
+```js
+window.__escolher = async (rotulo, opcao) => {
+  const espera = ms => new Promise(r => setTimeout(r, ms));
+  const d = document.querySelector('ytcp-uploads-dialog');
+  const sel = [...d.querySelectorAll('ytcp-form-select')].find(x => x.offsetParent && rotulo.test((x.innerText || '').replace(/\s+/g, ' ')));
+  const trig = sel.querySelector('ytcp-dropdown-trigger, #trigger'); trig.scrollIntoView({block: 'center'}); trig.click(); await espera(900);
+  const op = [...document.querySelectorAll('tp-yt-paper-item, [role=option]')].find(i => i.offsetParent && opcao.test((i.innerText || '').trim()));
+  op.scrollIntoView({block: 'center'}); op.click(); await espera(700);
+  return (sel.innerText || '').replace(/\s+/g, ' ').trim();
+};
+await window.__escolher(/Idioma do v.deo|Video language/i, new RegExp(m.idioma_rotulo, 'i'));
+```
+
+   The language list renders a moment after it opens: wait for the option (retry ~5 s) before clicking.
+   **Check the saved language afterwards**: in 4 of 14 uploads of one batch the dialog showed the right language but
+   the video was saved with the account's default. After scheduling the batch, open
+   `studio.youtube.com/video/ID/edit`, click *Mostrar mais* and read `Idioma do vídeo`; fix the wrong ones with real
+   clicks (dropdown, then the option) and *Salvar*. Inside the upload dialog the field is not reliable either way:
+   only the edit page tells the truth.
+
+4. Category stays **Jogos/Gaming** (the account default). Focus the game title box from JS (`scrollIntoView`,
+   `click()`, `focus()`; a coordinate click can land on another field after the dialog scrolls), or click the game title box (`input[aria-label="Título do jogo
+   (opcional)"]`), type `Roblox` with real key presses (`computer` → `type`) and click the `Roblox 2006` suggestion.
+5. Tags: click `input[aria-label=Tags]`, type `m.tags.join(', ') + ','` with real key presses and check that the
+   number of chips (`ytcp-chip, ytcp-free-text-chip`) equals the number of tags.
+6. Next ×3 (`#next-button`), open scheduling (`#second-container-expand-button`), open the date picker
+   (`#datepicker-trigger`), select the date input and type the date in the UI format (`17 de out. de 2026`) + Enter.
+   Time zone button → the option of the setup's time zone (for America/Sao_Paulo, `(GMT-0300) Horário local`).
+   Click the time input and pick the exact time option from the list. Before `#done-button` (**Programar**), check the
+   date, the time and the time zone in the dialog.
+7. Close the "Entendi/Got it" notice; the share dialog shows "Vídeo programado … DATE às HH:MM" and the Shorts
+   link. Save it with `python scripts/lote.py marcar LOTE N agendado --link URL`.
+
+English UI / new account — differences that cost retries:
+- The account default category was **Entertainment**, so the game title box did not exist. Switch Category to
+  Gaming first: `__escolher(/^(Entertainment|People & Blogs|Category.*)$/i, /^Gaming$/i)`. Then the
+  `input[aria-label="Game title (optional)"]` appears.
+- After clicking the `Roblox 2006` option, wait about 1.5 s **before** focusing Tags. The dropdown puts the focus
+  back on the game box, and the typed tags otherwise end up in the game title. While the dialog says
+  "Saving…", the game box can read empty for a moment: poll it before deciding.
+- The date box uses `Oct 17, 2026` (select all, type, Enter). The time options are `9:00 AM` / `6:00 PM`, and the
+  time zone option is `(GMT-0300) Local Time`. The scheduled dialog says "Video scheduled … October 17, 2026 at
+  9:00 AM".
+- A "Help us improve policy checks" card shows up at the bottom right. Leave it alone (it is a survey).
+
+Uploads in a row: YouTube may limit the daily uploads of a new channel. If the dialog shows a limit, stop and tell
+the user which videos are left; never try another channel.
+
+Checks that saved time: verify `chips === tags.length` and the title before Next; verify the date text, `HH:MM` and
+the time zone in one call and only then click Programar; read the link from the dialog that says
+"Vídeo programado" (the upload dialog also shows a link before scheduling). In the content list, a not-made-for-kids
+Short shows comments on; a made-for-kids one shows "Comentários desativados".

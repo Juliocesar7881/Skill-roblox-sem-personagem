@@ -1,0 +1,27 @@
+{
+  "videos_por_lote": 2,
+  "horarios": [
+    "09:00",
+    "18:00"
+  ],
+  "fuso": "America/Sao_Paulo",
+  "idioma": "",
+  "canal": {
+    "nome": "",
+    "id": "",
+    "handle": "",
+    "idioma_video": ""
+  },
+  "tiktok": {
+    "handle": "",
+    "dias_agendamento": 30
+  },
+  "feito_para_criancas": null,
+  "categoria": "Gaming",
+  "pasta_entregas": "~/Documents/entregas/roblox-sem-personagem",
+  "pastas_historico": [
+    "~/Documents/entregas/roblox-sem-personagem"
+  ],
+  "jogo": "Roblox",
+  "personagem": {}
+}
